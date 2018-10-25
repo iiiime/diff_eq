@@ -35,7 +35,19 @@ double dS(double k, double s) {
 }
 
 
+/**
+ * x0: estimated solution
+ * k: 2nd param of function dK, dS
+ * 
+ */
 double solve(double(*f)(double, double), double x0, double x1, double k) {
+	double d, cur; // difference
+	while(1) {
+		
+		if (fabs(d) > eta && fabs(/*TODO*/) > eta) {
+			break;
+		}
+	}
 	return 0;
 }
 
