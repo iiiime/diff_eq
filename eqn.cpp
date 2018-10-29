@@ -9,12 +9,12 @@
 #define ak 0.004
 #define bk 0.07
 #define bs 0.82
-#define k0 0.2
+#define k0 0.2 //kg = k0 = bg
 #define k1 0.222
 #define n 2
 #define p 5
 
-#define eta 1e-9 //accuracy of error
+#define eta 1e-7 //accuracy of error
 
 using namespace std;
 
@@ -26,17 +26,37 @@ double f(double x, double y) {
 }
 
 
+/**
+ * dK/dt
+ */
 double dK(double s, double k) {
 	return ak + bk * pow(k, n) / (pow(k0, n) + pow(k, n)) - k / (1 + k + s);
 }
 
+
+/**
+ * dS/dt
+ */
 double dS(double s, double k) {
 	return bs / (1 + pow((k / k1), p)) - s / (1 + k + s);
+}
+
+
+/**
+ * dS/dt: feedback bypass adding ComS driving promoter PComG (2nd term in eqn)
+ * notice that the value of parameter k0 = kb = bg
+ * see eqn S13 for detail
+ */
+double dSg(double s, double k) {
+	return bs / (1 + pow((k / k1), p)) + k0 * pow(k, n)/(pow(k0, n) + pow(k, n))
+				 - s / (1 + k + s);
 }
 
 double test(double k, double s) {
 	return s*s + k;
 }
+
+
 /**
  * [x0, x1]: estimated interval of solution
  * k: param of function dK, dS
@@ -53,7 +73,7 @@ double solve(double(*f)(double, double), double x1, double x0, double k) {
 		if (fabs(d) < eta && fabs((*f)(x1, k)) < eta) {
 			break;
 		}
-		x0 = x1;
+		x0 = x1; // update solution
 		x1 = x2;
 	}
 	return x1;
