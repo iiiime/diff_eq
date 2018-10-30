@@ -14,7 +14,7 @@
 #define n 2
 #define p 5
 
-#define eta 1e-7 //accuracy of error
+#define eta 1e-07 //accuracy of error
 
 using namespace std;
 
@@ -44,7 +44,7 @@ double dS(double s, double k) {
 
 /**
  * dS/dt: feedback bypass adding ComS driving promoter PComG (2nd term in eqn)
- * notice that the value of parameter k0 = kb = bg
+ * the value of parameter k0 = kb = bg is not initialized
  * see eqn S13 for detail
  */
 double dSg(double s, double k) {
@@ -60,7 +60,7 @@ double test(double k, double s) {
 /**
  * [x0, x1]: estimated interval of solution
  * k: param of function dK, dS
- * 
+ * function pointer to use function as parameter 
  */
 double solve(double(*f)(double, double), double x1, double x0, double k) {
 	double d, x2; // difference
@@ -69,15 +69,25 @@ double solve(double(*f)(double, double), double x1, double x0, double k) {
 		x2 = x1 - (*f)(x1, k) * (x1 - x0) / ((*f)(x1, k) - (*f)(x0, k));
 		d = x1 - x0;
 		//cout << "x2: " << x2 << " " << "x1: " << x1 << endl;
-		//cout << d << endl;
-		if (fabs(d) < eta && fabs((*f)(x1, k)) < eta) {
+		//cout << "the differentce is: " << fabs(d) << endl;
+		//cout << "if < eta??: " << (fabs(d) < eta) << endl;
+		if (fabs(d) < eta) {
 			break;
 		}
 		x0 = x1; // update solution
 		x1 = x2;
+		
+		i++;
+
+		// the functions has possibly no solution is the number of steps > 10
+		if(i > 10) {
+			//cout << "!!!!!!!!!!!!!!!!!!!" << endl;
+			break;
+		}
 	}
 	return x1;
 }
+
 
 /**
  * x0, y0: initial value
@@ -94,12 +104,17 @@ vector<double> Euler(double x0, double y0, double h, int end){
 	return y;
 }
 
-
+/**
+ * calculations of nullclines solutions
+ * TODO: add nullclines for bypass, add noise term, add [comS][comK]-t
+ * plot the phase path for a solution of 2-eqn first-order ODE using verctor
+ * [y1, y2]
+ */
 int main(int argc, char* argv[]) {
 	for(int i = 0 ; i < 450; i ++) {
 		double x = i * 0.001;
 		double y_s = solve(dS, 0, 6, x);
-		double y_k = solve(dK, 0, 6, x);
+		double y_k = solve(dK, 0, 0.6, x);
 		cout << x << " " << y_k << " " << y_s << endl;
 	}
 	//double x = solve(dK, 0, 6, 0.2);
